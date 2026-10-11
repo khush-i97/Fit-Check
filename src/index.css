@@ -1,0 +1,5 @@
+/* Fit Gate styles – Tailwind CDN handles most, this is for extras */
+body {
+  margin: 0;
+  background: #faf8f5;
+}

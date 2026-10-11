@@ -1,0 +1,43 @@
+import type { Rule, WardrobeItem } from './types.js'
+
+const now = () => new Date().toISOString()
+
+export const SEED_WARDROBE: WardrobeItem[] = [
+  { _id: 'taupe-blazer', name: 'Taupe Cotton Blazer', category: 'outer', color: 'taupe', tags: ['tailored', 'office', 'neutral'], timesWorn: 6 },
+  { _id: 'black-leather-blazer', name: 'Black Leather Blazer', category: 'outer', color: 'black', tags: ['statement', 'evening', 'bold'], timesWorn: 3 },
+  { _id: 'denim-jacket', name: 'Vintage Denim Jacket', category: 'outer', color: 'blue', tags: ['casual', 'vintage', 'layering'], timesWorn: 9 },
+  { _id: 'white-oxford', name: 'White Oxford Shirt', category: 'top', color: 'white', tags: ['crisp', 'office', 'neutral'], timesWorn: 11 },
+  { _id: 'cream-knit', name: 'Cream Cable Knit', category: 'top', color: 'cream', tags: ['soft', 'cozy', 'date'], timesWorn: 7 },
+  { _id: 'black-tank', name: 'Black Ribbed Tank', category: 'top', color: 'black', tags: ['minimal', 'evening', 'layering'], timesWorn: 5 },
+  { _id: 'rust-silk-blouse', name: 'Rust Silk Blouse', category: 'top', color: 'rust', tags: ['bold', 'date', 'texture'], timesWorn: 2 },
+  { _id: 'grey-tee', name: 'Heather Grey Tee', category: 'top', color: 'grey', tags: ['casual', 'weekend', 'chill'], timesWorn: 14 },
+  { _id: 'navy-trousers', name: 'Navy Tailored Trousers', category: 'bottom', color: 'navy', tags: ['tailored', 'office'], timesWorn: 8 },
+  { _id: 'light-jeans', name: 'Light Wash Jeans', category: 'bottom', color: 'light blue', tags: ['casual', 'weekend', 'date'], timesWorn: 12 },
+  { _id: 'black-trousers', name: 'Tailored Black Trousers', category: 'bottom', color: 'black', tags: ['sharp', 'evening', 'event'], timesWorn: 4 },
+  { _id: 'olive-cargo', name: 'Olive Cargo Pants', category: 'bottom', color: 'olive', tags: ['utility', 'weekend', 'chill'], timesWorn: 3 },
+  { _id: 'brown-loafers', name: 'Brown Leather Loafers', category: 'shoes', color: 'brown', tags: ['polished', 'office'], timesWorn: 10 },
+  { _id: 'heeled-boots', name: 'Black Heeled Boots', category: 'shoes', color: 'black', tags: ['bold', 'evening', 'event'], timesWorn: 4 },
+  { _id: 'white-sneakers', name: 'White Leather Sneakers', category: 'shoes', color: 'white', tags: ['casual', 'weekend', 'friends'], timesWorn: 18 },
+  { _id: 'brown-shoulder-bag', name: 'Brown Shoulder Bag', category: 'bag', color: 'brown', tags: ['soft', 'date', 'everyday'], timesWorn: 9 },
+  { _id: 'gold-hoops', name: 'Gold Hoops', category: 'accessory', color: 'gold', tags: ['bold', 'date', 'event'], timesWorn: 6 },
+]
+
+export const SEED_RULES: Rule[] = [
+  { _id: 'r-bold-confident', text: 'Bold colors only when mood is Confident or Bold', applies: 'All occasions', weight: 0.6, status: 'active', origin: 'seed', version: 1, updatedAt: now() },
+  { _id: 'r-structure-softness', text: 'Balance one structured piece with one soft piece', applies: 'Office, Events', weight: 0.5, status: 'active', origin: 'seed', version: 1, updatedAt: now() },
+  { _id: 'r-vintage-layers', text: 'When the vibe is vintage, lean into texture and layers', applies: 'Weekend, Friends', weight: 0.4, status: 'active', origin: 'seed', version: 1, updatedAt: now() },
+]
+
+// Unsplash pool for look cards; picked by mood so cards feel on-theme.
+export const MOOD_IMAGES: Record<string, string[]> = {
+  Confident: ['photo-1594938298603-c8148c4dae35', 'photo-1507679799987-c73779587ccf'],
+  Chill: ['photo-1515886657613-9f3515b0c78f', 'photo-1529139574466-a303027c1d8b'],
+  Bold: ['photo-1539109136881-3be0616acf4b', 'photo-1509631179647-0177331693ae'],
+  Cozy: ['photo-1434389677669-e08b4cac3105', 'photo-1485462537746-965f33f7f6a7'],
+  Sharp: ['photo-1487222477894-8943e31ef7b7', 'photo-1490481651871-ab68de25d43d'],
+}
+
+export function imageFor(mood: string, i: number) {
+  const pool = MOOD_IMAGES[mood] ?? MOOD_IMAGES.Bold
+  return `https://images.unsplash.com/${pool[i % pool.length]}?w=400&h=500&fit=crop`
+}
