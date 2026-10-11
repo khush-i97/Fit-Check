@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { claudeJSON, embed, hasClaude, hasVoice } from './integrations.js'
+import { embed, hasVoice, llmJSON, llmProvider, type LLM } from './integrations.js'
 import { imageFor } from './seed.js'
 import { getStore } from './store.js'
 import type { Episode, Look, Reaction, Rule, RuleEvent, RuleOp, WardrobeItem } from './types.js'
@@ -24,7 +24,7 @@ export async function status() {
   const store = await getStore()
   return {
     store: store.kind,
-    claude: hasClaude(),
+    llm: llmProvider(),
     voyage: Boolean(process.env.VOYAGE_API_KEY),
     voice: hasVoice(),
   }
@@ -49,10 +49,10 @@ export async function generateLooks(mood: string, occasion: string) {
   const memories = await store.searchEpisodes(queryVec, 6)
 
   let drafts: z.infer<typeof LooksSchema>['looks']
-  let engine: 'claude' | 'heuristic' = 'heuristic'
-  if (hasClaude()) {
+  let engine: LLM | 'heuristic' = 'heuristic'
+  if (llmProvider()) {
     try {
-      const out = await claudeJSON({
+      const out = await llmJSON({
         schema: LooksSchema,
         system:
           'You are Fit Gate, a personal stylist agent. You build outfits ONLY from the user\'s wardrobe item ids. ' +
@@ -66,9 +66,9 @@ export async function generateLooks(mood: string, occasion: string) {
           'if any are relevant, otherwise what you will learn from this pick.',
       })
       drafts = out.looks
-      engine = 'claude'
+      engine = llmProvider()!
     } catch (err) {
-      console.warn('[fit-gate] Claude looks failed, using heuristic:', (err as Error).message)
+      console.warn('[fit-gate] LLM looks failed, using heuristic:', (err as Error).message)
       drafts = heuristicLooks(mood, occasion, items, memories, rules)
     }
   } else {
@@ -157,10 +157,10 @@ export async function react(look: Look, reaction: Reaction, note = '') {
 
   let ops: RuleOp[]
   let stylistLine: string
-  let engine: 'claude' | 'heuristic' = 'heuristic'
-  if (hasClaude()) {
+  let engine: LLM | 'heuristic' = 'heuristic'
+  if (llmProvider()) {
     try {
-      const out = await claudeJSON({
+      const out = await llmJSON({
         schema: RewriteSchema,
         effort: 'medium',
         system:
@@ -178,9 +178,9 @@ export async function react(look: Look, reaction: Reaction, note = '') {
       })
       ops = out.ops
       stylistLine = out.stylistLine
-      engine = 'claude'
+      engine = llmProvider()!
     } catch (err) {
-      console.warn('[fit-gate] Claude rewrite failed, using heuristic:', (err as Error).message)
+      console.warn('[fit-gate] LLM rewrite failed, using heuristic:', (err as Error).message)
       ;({ ops, stylistLine } = heuristicRewrite(look, reaction, rules, similar))
     }
   } else {
@@ -266,16 +266,16 @@ export async function ask(question: string) {
   const [rules, vec] = await Promise.all([store.rules(), embed(question, 'query')])
   const memories = await store.searchEpisodes(vec, 6)
   let answer: string
-  if (hasClaude()) {
+  if (llmProvider()) {
     try {
-      const out = await claudeJSON({
+      const out = await llmJSON({
         schema: AskSchema,
         system: 'You are Fit Gate, a warm, concise personal stylist speaking aloud. Answer in at most 2 short sentences (under 45 words). Ground your answer in the user\'s actual history and your current rules; cite specifics.',
         prompt: `Question: ${question}\n\nSTYLE RULES:\n${fmtRules(rules)}\n\nRELEVANT MEMORY:\n${fmtEpisodes(memories)}`,
       })
       answer = out.answer
     } catch (err) {
-      console.warn('[fit-gate] Claude ask failed:', (err as Error).message)
+      console.warn('[fit-gate] LLM ask failed:', (err as Error).message)
       answer = fallbackAnswer(memories, rules)
     }
   } else {

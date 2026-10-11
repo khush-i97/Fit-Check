@@ -53,7 +53,7 @@ Every integration is optional and degrades gracefully. The status pills in the h
 | -------------------- | ------------------------------------------- |
 | `MONGODB_URI`        | in-process store (resets on restart)        |
 | `VOYAGE_API_KEY`     | recency-based recall instead of vector search |
-| `ANTHROPIC_API_KEY`  | deterministic heuristic stylist and rule editor |
+| `ANTHROPIC_API_KEY`  | `GROQ_API_KEY` (free Llama 3.3 70B), else a deterministic heuristic stylist and rule editor |
 | `ELEVENLABS_API_KEY` | browser speech synthesis                    |
 
 Speech-to-text uses the browser Web Speech API (Chrome or Safari).

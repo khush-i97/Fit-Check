@@ -2,10 +2,10 @@ import type { Episode, Look, Reaction, Rule, RuleEvent, WardrobeItem } from '../
 
 export type { Episode, Look, Reaction, Rule, RuleEvent, WardrobeItem }
 
-export interface Status { store: 'atlas' | 'memory'; claude: boolean; voyage: boolean; voice: boolean }
+export interface Status { store: 'atlas' | 'memory'; llm: 'claude' | 'groq' | null; voyage: boolean; voice: boolean }
 export interface HarnessState { rules: Rule[]; retired: Rule[]; events: RuleEvent[]; episodes: Episode[]; wardrobe: WardrobeItem[] }
-export interface LooksResult { looks: Look[]; memories: Episode[]; engine: 'claude' | 'heuristic' }
-export interface ReactResult { episode: Episode; events: RuleEvent[]; stylistLine: string; engine: 'claude' | 'heuristic'; rules: Rule[] }
+export interface LooksResult { looks: Look[]; memories: Episode[]; engine: 'claude' | 'groq' | 'heuristic' }
+export interface ReactResult { episode: Episode; events: RuleEvent[]; stylistLine: string; engine: 'claude' | 'groq' | 'heuristic'; rules: Rule[] }
 
 async function call<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`/api/${path}`, body === undefined ? undefined : {
