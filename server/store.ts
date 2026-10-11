@@ -130,7 +130,7 @@ export function getStore(): Promise<Store> {
     }
     const client = new MongoClient(uri, { appName: 'fit-gate' })
     await client.connect()
-    const store = new AtlasStore(client.db(process.env.MONGODB_DB ?? 'fitgate'))
+    const store = new AtlasStore(client.db(process.env.MONGODB_DB || 'fitgate'))
     await store.seedIfEmpty()
     return store
   })()

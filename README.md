@@ -25,7 +25,7 @@ user reacts (Wear / Tweak / Pass + optional note)
 - Weights are clamped to 0..1, and a rule auto-retires when its weight drops below 0.15.
 
 **Long-horizon memory.**
-- `episodes`: every reaction, embedded with Voyage `voyage-3.5` (1024 dims).
+- `episodes`: every reaction, embedded with Voyage `voyage-4` (1024 dims).
 - `wardrobe`: owned items, wear counts, and when each was last worn.
 - Retrieval uses Atlas Vector Search.
 
