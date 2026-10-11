@@ -22,16 +22,24 @@ export async function embed(text: string, inputType: 'document' | 'query'): Prom
 }
 
 // ---- LLM (look generation + harness self-rewrite) ----
-// Claude when ANTHROPIC_API_KEY is set; otherwise Groq's free tier when
-// GROQ_API_KEY is set; otherwise callers fall back to heuristics.
+// Claude when ANTHROPIC_API_KEY is set; otherwise the first free
+// OpenAI-compatible provider with a key; otherwise callers use heuristics.
 
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-opus-5-5'
 let client: Anthropic | null = null
 
-export type LLM = 'claude' | 'groq'
+const FREE_PROVIDERS = [
+  { name: 'gemini', key: 'GEMINI_API_KEY', url: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' },
+  { name: 'groq', key: 'GROQ_API_KEY', url: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
+  { name: 'cerebras', key: 'CEREBRAS_API_KEY', url: 'https://api.cerebras.ai/v1', model: 'llama-3.3-70b' },
+] as const
+
+export type LLM = 'claude' | (typeof FREE_PROVIDERS)[number]['name']
+
+const freeProvider = () => FREE_PROVIDERS.find(p => process.env[p.key])
 
 export const llmProvider = (): LLM | null =>
-  process.env.ANTHROPIC_API_KEY ? 'claude' : process.env.GROQ_API_KEY ? 'groq' : null
+  process.env.ANTHROPIC_API_KEY ? 'claude' : freeProvider()?.name ?? null
 
 interface JSONRequest<T extends z.ZodType> {
   system: string
@@ -41,7 +49,7 @@ interface JSONRequest<T extends z.ZodType> {
 }
 
 export function llmJSON<T extends z.ZodType>(opts: JSONRequest<T>): Promise<z.infer<T>> {
-  return llmProvider() === 'claude' ? claudeJSON(opts) : groqJSON(opts)
+  return llmProvider() === 'claude' ? claudeJSON(opts) : openAICompatJSON(opts)
 }
 
 async function claudeJSON<T extends z.ZodType>(opts: JSONRequest<T>): Promise<z.infer<T>> {
@@ -63,23 +71,32 @@ async function claudeJSON<T extends z.ZodType>(opts: JSONRequest<T>): Promise<z.
   return opts.schema.parse(JSON.parse(text))
 }
 
-async function groqJSON<T extends z.ZodType>(opts: JSONRequest<T>): Promise<z.infer<T>> {
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+async function openAICompatJSON<T extends z.ZodType>(opts: JSONRequest<T>): Promise<z.infer<T>> {
+  const p = freeProvider()!
+  const body = {
+    model: process.env.LLM_MODEL ?? p.model,
+    response_format: { type: 'json_object' },
+    temperature: 0.7,
+    messages: [
+      { role: 'system', content: `${opts.system}\n\nRespond with ONLY a JSON object matching this JSON Schema:\n${JSON.stringify(toJSONSchema(opts.schema))}` },
+      { role: 'user', content: opts.prompt },
+    ],
+  }
+  const post = (b: object) => fetch(`${p.url}/chat/completions`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: process.env.GROQ_MODEL ?? 'llama-3.3-70b-versatile',
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-      messages: [
-        { role: 'system', content: `${opts.system}\n\nRespond with ONLY a JSON object matching this JSON Schema:\n${JSON.stringify(toJSONSchema(opts.schema))}` },
-        { role: 'user', content: opts.prompt },
-      ],
-    }),
+    headers: { Authorization: `Bearer ${process.env[p.key]}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(b),
   })
-  if (!res.ok) throw new Error(`Groq ${res.status}: ${await res.text()}`)
+  let res = await post(body)
+  // Some providers reject response_format; retry relying on the prompt alone.
+  if (res.status === 400) {
+    const { response_format: _rf, ...rest } = body
+    res = await post(rest)
+  }
+  if (!res.ok) throw new Error(`${p.name} ${res.status}: ${await res.text()}`)
   const json = (await res.json()) as { choices: { message: { content: string } }[] }
-  return opts.schema.parse(JSON.parse(json.choices[0].message.content))
+  const text = json.choices[0].message.content.replace(/^```(?:json)?\s*|\s*```$/g, '')
+  return opts.schema.parse(JSON.parse(text))
 }
 
 function toJSONSchema(schema: z.ZodType) {
