@@ -28,13 +28,24 @@ export const SEED_RULES: Rule[] = [
   { _id: 'r-vintage-layers', text: 'When the vibe is vintage, lean into texture and layers', applies: 'Weekend, Friends', weight: 0.4, status: 'active', origin: 'seed', version: 1, updatedAt: now() },
 ]
 
-// Unsplash pool for look cards; picked by mood so cards feel on-theme.
+// Unsplash pool for look cards: three distinct photos per mood.
+const P = {
+  checkSuit: 'photo-1594938298603-c8148c4dae35',
+  navySuit: 'photo-1507679799987-c73779587ccf',
+  yellowSet: 'photo-1515886657613-9f3515b0c78f',
+  redTee: 'photo-1529139574466-a303027c1d8b',
+  blueCoat: 'photo-1539109136881-3be0616acf4b',
+  stripeTrousers: 'photo-1509631179647-0177331693ae',
+  creamKnit: 'photo-1434389677669-e08b4cac3105',
+  pinkCoat: 'photo-1485462537746-965f33f7f6a7',
+  rail: 'photo-1490481651871-ab68de25d43d',
+}
 export const MOOD_IMAGES: Record<string, string[]> = {
-  Confident: ['photo-1594938298603-c8148c4dae35', 'photo-1507679799987-c73779587ccf'],
-  Chill: ['photo-1515886657613-9f3515b0c78f', 'photo-1529139574466-a303027c1d8b'],
-  Bold: ['photo-1539109136881-3be0616acf4b', 'photo-1509631179647-0177331693ae'],
-  Cozy: ['photo-1434389677669-e08b4cac3105', 'photo-1485462537746-965f33f7f6a7'],
-  Sharp: ['photo-1487222477894-8943e31ef7b7', 'photo-1490481651871-ab68de25d43d'],
+  Confident: [P.checkSuit, P.navySuit, P.pinkCoat],
+  Chill: [P.yellowSet, P.creamKnit, P.rail],
+  Bold: [P.redTee, P.stripeTrousers, P.blueCoat],
+  Cozy: [P.creamKnit, P.pinkCoat, P.rail],
+  Sharp: [P.navySuit, P.checkSuit, P.blueCoat],
 }
 
 export function imageFor(mood: string, i: number) {

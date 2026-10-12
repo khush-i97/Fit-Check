@@ -366,7 +366,7 @@ export default function App() {
       </main>
 
       <footer className="text-center text-xs text-muted py-6 border-t border-sand">
-        Fit Gate · Self-rewriting stylist harness · MongoDB Atlas · Voyage AI · Claude · ElevenLabs
+        Fit Gate · Self-rewriting stylist harness · MongoDB Atlas · Atlas Vector Search · Voyage AI · ElevenLabs
       </footer>
     </div>
   )
