@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { embed, hasVoice, llmJSON, llmProvider, type LLM } from './integrations.js'
-import { imageFor } from './seed.js'
+import { imagesFor } from './seed.js'
 import { getStore } from './store.js'
 import type { Episode, Look, Reaction, Rule, RuleEvent, RuleOp, WardrobeItem } from './types.js'
 
@@ -61,7 +61,7 @@ export async function generateLooks(mood: string, occasion: string) {
         prompt:
           `Mood: ${mood}\nOccasion: ${occasion}\n\nSTYLE RULES:\n${fmtRules(rules)}\n\nWARDROBE:\n${fmtWardrobe(items)}\n\n` +
           `RELEVANT MEMORY (retrieved):\n${fmtEpisodes(memories)}\n\n` +
-          'Propose exactly 3 distinct looks. Each: a short evocative title (2-4 words), one-line description, 3-5 itemIds ' +
+          'Propose exactly 3 clearly different looks built for THIS mood and occasion: vary the key pieces across the three (no two looks sharing the same top and bottom), and prefer items whose tags match the occasion. Each: a short evocative title (2-4 words), one-line description, 3-5 itemIds ' +
           '(at most one per category), the rule ids you applied, and memoryNote: one sentence citing specific past episodes ' +
           'if any are relevant, otherwise what you will learn from this pick.',
       })
@@ -77,6 +77,7 @@ export async function generateLooks(mood: string, occasion: string) {
 
   const byId = new Map(items.map(i => [i._id, i]))
   const activeRuleIds = new Set(rules.map(r => r._id))
+  const images = imagesFor(mood, occasion)
   const looks: Look[] = drafts.slice(0, 3).map((d, i) => {
     const valid = d.itemIds.filter(x => byId.has(x))
     return {
@@ -89,7 +90,7 @@ export async function generateLooks(mood: string, occasion: string) {
       pieces: valid.map(x => ({ name: byId.get(x)!.category.toUpperCase(), item: byId.get(x)!.name })),
       rulesApplied: d.rulesApplied.filter(r => activeRuleIds.has(r)),
       memoryNote: d.memoryNote,
-      image: imageFor(mood, i),
+      image: images[i % images.length],
     }
   })
   return { looks, memories, engine }

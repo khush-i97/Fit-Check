@@ -171,7 +171,7 @@ export default function App() {
               <p className="text-xs uppercase tracking-wider text-muted mb-2">Mood</p>
               <div className="flex flex-wrap gap-2">
                 {MOODS.map(m => (
-                  <button key={m} onClick={() => setMood(m)} className={`px-4 py-2 rounded-full text-sm border transition ${mood === m ? 'bg-ink text-cream border-ink' : 'bg-white border-sand hover:border-ink/30'}`}>{m}</button>
+                  <button key={m} onClick={() => { if (m !== mood) { setMood(m); setLooks([]) } }} className={`px-4 py-2 rounded-full text-sm border transition ${mood === m ? 'bg-ink text-cream border-ink' : 'bg-white border-sand hover:border-ink/30'}`}>{m}</button>
                 ))}
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function App() {
               <p className="text-xs uppercase tracking-wider text-muted mb-2">Occasion</p>
               <div className="flex flex-wrap gap-2">
                 {OCCASIONS.map(o => (
-                  <button key={o} onClick={() => setOccasion(o)} className={`px-4 py-2 rounded-full text-sm border transition ${occasion === o ? 'bg-sand border-ink/20' : 'bg-white border-sand hover:border-ink/30'}`}>{o}</button>
+                  <button key={o} onClick={() => { if (o !== occasion) { setOccasion(o); setLooks([]) } }} className={`px-4 py-2 rounded-full text-sm border transition ${occasion === o ? 'bg-sand border-ink/20' : 'bg-white border-sand hover:border-ink/30'}`}>{o}</button>
                 ))}
               </div>
             </div>
@@ -191,6 +191,7 @@ export default function App() {
 
             {looks.length > 0 && (
               <>
+                <p className="text-xs uppercase tracking-wider text-muted mb-3">Looks for {looks[0].mood} · {looks[0].occasion}</p>
                 <div className="grid md:grid-cols-3 gap-4">
                   {looks.map(look => (
                     <button key={look.id} onClick={() => { setSelectedLook(look); setScreen('detail') }} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition text-left border border-sand">
