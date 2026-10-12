@@ -128,7 +128,7 @@ export function getStore(): Promise<Store> {
       console.warn('[fit-gate] MONGODB_URI not set — using in-memory store')
       return new MemoryStore()
     }
-    const client = new MongoClient(uri, { appName: 'fit-gate' })
+    const client = new MongoClient(uri, { appName: 'fit-gate', serverSelectionTimeoutMS: 8000 })
     await client.connect()
     const store = new AtlasStore(client.db(process.env.MONGODB_DB || 'fitgate'))
     await store.seedIfEmpty()

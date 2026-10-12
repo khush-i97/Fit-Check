@@ -4,6 +4,8 @@ A daily outfit stylist built as a **self-rewriting agent harness** with **long-h
 
 Built for the Harness Engineering & Model Wrangling #SFTechWeek Hackathon (Recursive Harnessing + Long Horizon Engineering).
 
+**Live:** https://fit-gate.vercel.app
+
 ## How it works
 
 ```
